@@ -3,185 +3,90 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LF.Código</title>
+
+<title>Minha Rede</title>
+
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
 
 <meta name="theme-color" content="#000000">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
 
 <style>
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #f4f4f4;
-  display: flex;
-  justify-content: center;
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#f2f2f2;
 }
 
-.container {
-  width: 100%;
-  max-width: 400px;
-  padding: 20px;
+header{
+  background:black;
+  color:white;
+  padding:15px;
+  text-align:center;
+  font-size:20px;
+  font-weight:bold;
 }
 
-h2 {
-  text-align: center;
+.container{
+  padding:15px;
 }
 
-input, textarea {
-  width: 100%;
-  padding: 10px;
-  margin-top: 8px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
+textarea{
+  width:100%;
+  padding:10px;
+  border-radius:10px;
+  border:1px solid #ccc;
+  resize:none;
 }
 
-button {
-  width: 100%;
-  padding: 14px;
-  margin-top: 12px;
-  border: none;
-  border-radius: 12px;
-  background: linear-gradient(90deg, #ff0000, #000000);
-  color: white;
-  font-weight: bold;
-  font-size: 15px;
-  letter-spacing: 0.5px;
-  cursor: pointer;
-  transition: all 0.3s ease;
+button{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border:none;
+  border-radius:10px;
+  background:black;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
 }
 
-button:hover {
-  transform: scale(1.03);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-}
-
-.post {
-  background: white;
-  padding: 10px;
-  margin-top: 15px;
-  border-radius: 8px;
-}
-
-#feed {
-  margin-top: 20px;
-}
-
-/* SPLASH SCREEN */
-#splash {
-  position: fixed;
-  inset: 0;
-  background: linear-gradient(135deg, #ff0000, #000000);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 28px;
-  font-weight: bold;
-  z-index: 9999;
-  animation: fadeOut 1s ease forwards;
-  animation-delay: 2s;
-}
-
-@keyframes fadeOut {
-  to {
-    opacity: 0;
-    visibility: hidden;
-  }
+.post{
+  background:white;
+  padding:10px;
+  margin-top:10px;
+  border-radius:10px;
 }
 </style>
 </head>
 
 <body>
 
-<div id="splash">LF.Código</div>
+<header>🔥 Minha Rede</header>
 
 <div class="container">
-
-<h2>LF.Código</h2>
-
-<div id="login">
-  <input type="text" id="username" placeholder="Seu nome">
-  <button onclick="login()">Entrar</button>
-</div>
-
-<div id="app" style="display:none;">
   <textarea id="postText" placeholder="O que você está pensando?"></textarea>
-  <button onclick="addPost()">Postar</button>
+  <button onclick="publicar()">Publicar</button>
+
   <div id="feed"></div>
 </div>
 
-</div>
-
 <script>
-// LOGIN
-function login() {
-  const username = document.getElementById("username").value;
-  if (username.trim() !== "") {
-    localStorage.setItem("username", username);
-    document.getElementById("login").style.display = "none";
-    document.getElementById("app").style.display = "block";
-  }
-}
+function publicar(){
+  const texto = document.getElementById("postText").value;
+  if(texto.trim() === "") return;
 
-// AUTO LOGIN
-window.onload = function() {
-  const savedUser = localStorage.getItem("username");
-  if (savedUser) {
-    document.getElementById("login").style.display = "none";
-    document.getElementById("app").style.display = "block";
-  }
-  loadPosts();
-};
-
-// POSTS
-function addPost() {
-  const text = document.getElementById("postText").value;
-  if (text.trim() === "") return;
-
-  const posts = JSON.parse(localStorage.getItem("posts")) || [];
-  posts.unshift(text);
-  localStorage.setItem("posts", JSON.stringify(posts));
-
-  document.getElementById("postText").value = "";
-  loadPosts();
-}
-
-function loadPosts() {
   const feed = document.getElementById("feed");
-  const posts = JSON.parse(localStorage.getItem("posts")) || [];
-  feed.innerHTML = "";
+  const div = document.createElement("div");
+  div.className = "post";
+  div.innerText = texto;
 
-  posts.forEach(post => {
-    const div = document.createElement("div");
-    div.className = "post";
-    div.innerText = post;
-    feed.appendChild(div);
-  });
+  feed.prepend(div);
+  document.getElementById("postText").value="";
 }
 
-// SERVICE WORKER (offline)
-if ('serviceWorker' in navigator) {
-  const swCode = `
-    self.addEventListener('install', e => {
-      e.waitUntil(
-        caches.open('lfcodigo').then(cache => {
-          return cache.addAll(['./']);
-        })
-      );
-    });
-
-    self.addEventListener('fetch', e => {
-      e.respondWith(
-        caches.match(e.request).then(response => {
-          return response || fetch(e.request);
-        })
-      );
-    });
-  `;
-  const blob = new Blob([swCode], { type: 'text/javascript' });
-  const swURL = URL.createObjectURL(blob);
-  navigator.serviceWorker.register(swURL);
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("service-worker.js");
 }
 </script>
 
