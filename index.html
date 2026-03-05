@@ -1,62 +1,198 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Mini Rede Social</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LF.Código</title>
+
   <style>
     body {
-      font-family: Arial;
-      background-color: #f2f2f2;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    #login-screen, #app-screen {
+      width: 95%;
+      max-width: 400px;
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
       text-align: center;
     }
-    h1 {
-      color: #333;
-    }
-    #postagem {
-      width: 80%;
+
+    input, textarea {
+      width: 100%;
       padding: 10px;
-      margin: 10px;
+      margin: 8px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
     }
+
+    textarea {
+      resize: none;
+      height: 80px;
+    }
+
     button {
+      width: 100%;
       padding: 10px;
-      background-color: #4CAF50;
-      color: white;
+      margin-top: 8px;
       border: none;
+      border-radius: 8px;
+      background: black;
+      color: white;
+      font-weight: bold;
       cursor: pointer;
+      transition: all 0.3s ease;
     }
-    .post {
-      background: white;
-      padding: 10px;
-      margin: 10px auto;
-      width: 80%;
-      border-radius: 5px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 25px rgba(0,0,0,0.2);
+      background: #222;
+    }
+
+    .slogan {
+      font-size: 14px;
+      color: #888;
+      margin-top: -10px;
+      margin-bottom: 20px;
+      letter-spacing: 2px;
+    }
+
+    #posts p {
+      background: #fdf1ff;
+      padding: 12px;
+      border-radius: 15px;
+      margin-top: 10px;
+      text-align: left;
+      font-size: 14px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
     }
   </style>
 </head>
+
 <body>
 
-  <h1>Minha Mini Rede Social 🚀</h1>
+<div id="login-screen">
+  <h2>Login LF.Código</h2>
+  <p class="slogan">Mentes que Programam</p>
 
-  <input type="text" id="postagem" placeholder="O que você está pensando?">
-  <br>
-  <button onclick="publicar()">Publicar</button>
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Senha">
 
-  <div id="feed"></div>
+  <button id="login-btn">Entrar</button>
+  <button id="register-btn">Criar Conta</button>
+</div>
 
-  <script>
-    function publicar() {
-      var texto = document.getElementById("postagem").value;
-      if (texto === "") return;
+<div id="app-screen" style="display: none;">
+  <h1>LF.Código</h1>
+  <p class="slogan">Mentes que Programam</p>
 
-      var novaPostagem = document.createElement("div");
-      novaPostagem.className = "post";
-      novaPostagem.innerText = texto;
+  <textarea placeholder="Compartilhe algo sobre programação"></textarea>
 
-      document.getElementById("feed").prepend(novaPostagem);
-      document.getElementById("postagem").value = "";
+  <button id="post-btn">Postar</button>
+  <button id="logout-btn">Sair</button>
+
+  <div id="posts"></div>
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBB3nhdr2Zsooo7FaKaEDtWeAyTWB3_C_w",
+  authDomain: "minha-rede-c24cf.firebaseapp.com",
+  projectId: "minha-rede-c24cf",
+  storageBucket: "minha-rede-c24cf.firebasestorage.app",
+  messagingSenderId: "1067702483048",
+  appId: "1:1067702483048:web:33029d97d538a39ccb63dd"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  const emailInput = document.getElementById("email");
+  const passwordInput = document.getElementById("password");
+
+  const loginBtn = document.getElementById("login-btn");
+  const registerBtn = document.getElementById("register-btn");
+  const logoutBtn = document.getElementById("logout-btn");
+  const postBtn = document.getElementById("post-btn");
+
+  const textarea = document.querySelector("textarea");
+  const postsDiv = document.getElementById("posts");
+
+  registerBtn.addEventListener("click", async () => {
+    try {
+      await createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
+      alert("Conta criada!");
+    } catch (error) {
+      alert(error.message);
     }
-  </script>
+  });
+
+  loginBtn.addEventListener("click", async () => {
+    try {
+      await signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
+    } catch (error) {
+      alert(error.message);
+    }
+  });
+
+  logoutBtn.addEventListener("click", async () => {
+    await signOut(auth);
+  });
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      document.getElementById("login-screen").style.display = "none";
+      document.getElementById("app-screen").style.display = "block";
+      loadPosts();
+    } else {
+      document.getElementById("login-screen").style.display = "block";
+      document.getElementById("app-screen").style.display = "none";
+    }
+  });
+
+  postBtn.addEventListener("click", async () => {
+    if (textarea.value.trim() === "") return;
+
+    await addDoc(collection(db, "posts"), {
+      content: textarea.value,
+      createdAt: new Date()
+    });
+
+    textarea.value = "";
+    loadPosts();
+  });
+
+  async function loadPosts() {
+    postsDiv.innerHTML = "";
+    const querySnapshot = await getDocs(collection(db, "posts"));
+
+    querySnapshot.forEach((doc) => {
+      const p = document.createElement("p");
+      p.textContent = doc.data().content;
+      postsDiv.appendChild(p);
+    });
+  }
+
+});
+
+</script>
 
 </body>
 </html>
