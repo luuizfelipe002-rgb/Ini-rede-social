@@ -18,3 +18,18 @@
     }
   ]
 }
+{
+  "name": "LF.Código",
+  "short_name": "LF",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "lf_codigo_icon_512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
