@@ -1,197 +1,188 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LF.Código</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LF.Código</title>
 
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f2f2f2;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
+<meta name="theme-color" content="#000000">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
 
-    #login-screen, #app-screen {
-      width: 95%;
-      max-width: 400px;
-      background: white;
-      padding: 20px;
-      border-radius: 15px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-      text-align: center;
-    }
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f4f4;
+  display: flex;
+  justify-content: center;
+}
 
-    input, textarea {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-    }
-
-    textarea {
-      resize: none;
-      height: 80px;
-    }
-
-    button {
+.container {
   width: 100%;
-  padding: 12px;
-  margin-top: 10px;
+  max-width: 400px;
+  padding: 20px;
+}
+
+h2 {
+  text-align: center;
+}
+
+input, textarea {
+  width: 100%;
+  padding: 10px;
+  margin-top: 8px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  margin-top: 12px;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   background: linear-gradient(90deg, #ff0000, #000000);
   color: white;
   font-weight: bold;
+  font-size: 15px;
+  letter-spacing: 0.5px;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 15px 30px rgba(0,0,0,0.3);
-  background: linear-gradient(90deg, #ff1a1a, #111111);
+  transform: scale(1.03);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
 }
 
-    .slogan {
-      font-size: 14px;
-      color: #888;
-      margin-top: -10px;
-      margin-bottom: 20px;
-      letter-spacing: 2px;
-    }
+.post {
+  background: white;
+  padding: 10px;
+  margin-top: 15px;
+  border-radius: 8px;
+}
 
-    #posts p {
-      background: #fdf1ff;
-      padding: 12px;
-      border-radius: 15px;
-      margin-top: 10px;
-      text-align: left;
-      font-size: 14px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    }
-  </style>
+#feed {
+  margin-top: 20px;
+}
+
+/* SPLASH SCREEN */
+#splash {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, #ff0000, #000000);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 28px;
+  font-weight: bold;
+  z-index: 9999;
+  animation: fadeOut 1s ease forwards;
+  animation-delay: 2s;
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+</style>
 </head>
 
 <body>
 
-<div id="login-screen">
-  <h2>Login LF.Código</h2>
-  <p class="slogan">Mentes que Programam</p>
+<div id="splash">LF.Código</div>
 
-  <input type="email" id="email" placeholder="Email">
-  <input type="password" id="password" placeholder="Senha">
+<div class="container">
 
-  <button id="login-btn">Entrar</button>
-  <button id="register-btn">Criar Conta</button>
+<h2>LF.Código</h2>
+
+<div id="login">
+  <input type="text" id="username" placeholder="Seu nome">
+  <button onclick="login()">Entrar</button>
 </div>
 
-<div id="app-screen" style="display: none;">
-  <h1>LF.Código</h1>
-  <p class="slogan">Mentes que Programam</p>
-
-  <textarea placeholder="Compartilhe algo sobre programação"></textarea>
-
-  <button id="post-btn">Postar</button>
-  <button id="logout-btn">Sair</button>
-
-  <div id="posts"></div>
+<div id="app" style="display:none;">
+  <textarea id="postText" placeholder="O que você está pensando?"></textarea>
+  <button onclick="addPost()">Postar</button>
+  <div id="feed"></div>
 </div>
 
-<script type="module">
+</div>
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+<script>
+// LOGIN
+function login() {
+  const username = document.getElementById("username").value;
+  if (username.trim() !== "") {
+    localStorage.setItem("username", username);
+    document.getElementById("login").style.display = "none";
+    document.getElementById("app").style.display = "block";
+  }
+}
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBB3nhdr2Zsooo7FaKaEDtWeAyTWB3_C_w",
-  authDomain: "minha-rede-c24cf.firebaseapp.com",
-  projectId: "minha-rede-c24cf",
-  storageBucket: "minha-rede-c24cf.firebasestorage.app",
-  messagingSenderId: "1067702483048",
-  appId: "1:1067702483048:web:33029d97d538a39ccb63dd"
+// AUTO LOGIN
+window.onload = function() {
+  const savedUser = localStorage.getItem("username");
+  if (savedUser) {
+    document.getElementById("login").style.display = "none";
+    document.getElementById("app").style.display = "block";
+  }
+  loadPosts();
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
+// POSTS
+function addPost() {
+  const text = document.getElementById("postText").value;
+  if (text.trim() === "") return;
 
-document.addEventListener("DOMContentLoaded", () => {
+  const posts = JSON.parse(localStorage.getItem("posts")) || [];
+  posts.unshift(text);
+  localStorage.setItem("posts", JSON.stringify(posts));
 
-  const emailInput = document.getElementById("email");
-  const passwordInput = document.getElementById("password");
+  document.getElementById("postText").value = "";
+  loadPosts();
+}
 
-  const loginBtn = document.getElementById("login-btn");
-  const registerBtn = document.getElementById("register-btn");
-  const logoutBtn = document.getElementById("logout-btn");
-  const postBtn = document.getElementById("post-btn");
+function loadPosts() {
+  const feed = document.getElementById("feed");
+  const posts = JSON.parse(localStorage.getItem("posts")) || [];
+  feed.innerHTML = "";
 
-  const textarea = document.querySelector("textarea");
-  const postsDiv = document.getElementById("posts");
-
-  registerBtn.addEventListener("click", async () => {
-    try {
-      await createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
-      alert("Conta criada!");
-    } catch (error) {
-      alert(error.message);
-    }
+  posts.forEach(post => {
+    const div = document.createElement("div");
+    div.className = "post";
+    div.innerText = post;
+    feed.appendChild(div);
   });
+}
 
-  loginBtn.addEventListener("click", async () => {
-    try {
-      await signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
-    } catch (error) {
-      alert(error.message);
-    }
-  });
-
-  logoutBtn.addEventListener("click", async () => {
-    await signOut(auth);
-  });
-
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      document.getElementById("login-screen").style.display = "none";
-      document.getElementById("app-screen").style.display = "block";
-      loadPosts();
-    } else {
-      document.getElementById("login-screen").style.display = "block";
-      document.getElementById("app-screen").style.display = "none";
-    }
-  });
-
-  postBtn.addEventListener("click", async () => {
-    if (textarea.value.trim() === "") return;
-
-    await addDoc(collection(db, "posts"), {
-      content: textarea.value,
-      createdAt: new Date()
+// SERVICE WORKER (offline)
+if ('serviceWorker' in navigator) {
+  const swCode = `
+    self.addEventListener('install', e => {
+      e.waitUntil(
+        caches.open('lfcodigo').then(cache => {
+          return cache.addAll(['./']);
+        })
+      );
     });
 
-    textarea.value = "";
-    loadPosts();
-  });
-
-  async function loadPosts() {
-    postsDiv.innerHTML = "";
-    const querySnapshot = await getDocs(collection(db, "posts"));
-
-    querySnapshot.forEach((doc) => {
-      const p = document.createElement("p");
-      p.textContent = doc.data().content;
-      postsDiv.appendChild(p);
+    self.addEventListener('fetch', e => {
+      e.respondWith(
+        caches.match(e.request).then(response => {
+          return response || fetch(e.request);
+        })
+      );
     });
-  }
-
-});
-
+  `;
+  const blob = new Blob([swCode], { type: 'text/javascript' });
+  const swURL = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swURL);
+}
 </script>
 
 </body>
